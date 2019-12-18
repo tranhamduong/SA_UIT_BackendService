@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Title: sa_uit
+Implementation-Version: 0.0.1-SNAPSHOT
+Built-By: tranhamduong
+Implementation-Vendor-Id: sa_uit
+Build-Jdk: 1.8.0_222
+Implementation-URL: https://projects.spring.io/spring-boot/#/spring-bo
+ ot-starter-parent/sa_uit
+Created-By: Maven Integration for Eclipse
+
