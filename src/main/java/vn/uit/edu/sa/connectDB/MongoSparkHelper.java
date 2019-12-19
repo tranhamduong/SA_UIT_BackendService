@@ -62,7 +62,7 @@ public class MongoSparkHelper<T> {
 				  + ConfigReader.readConfig("local.db.collection");
 	}
 	
-	public MongoSparkHelper(SparkConfigure sparkConfig, boolean ifRemote) {
+	public MongoSparkHelper(SparkConfigure sparkConfig, boolean ifRemote, String collectionName) {
 		String uri = null;
 		if (ifRemote) {
 			uri = "mongodb://" + ConfigReader.readConfig("uitsl.db.username") + ":"
@@ -70,18 +70,18 @@ public class MongoSparkHelper<T> {
 										   + ConfigReader.readConfig("uitsl.db.url") + ":"
 										   + ConfigReader.readConfig("uitsl.db.port") + "/"
 										   + ConfigReader.readConfig("uitsl.db.database") + "."
-										   + ConfigReader.readConfig("uitsl.db.collection") + "?authSource="
+										   //+ ConfigReader.readConfig("uitsl.db.collection") +"."
+										   + collectionName + "?authSource="
 										   + ConfigReader.readConfig("uitsl.db.authSource");
 			
-			System.out.println(uri);
 		}else {
 			uri = "mongodb://" + ConfigReader.readConfig("local.db.url") + "/"
 									  + ConfigReader.readConfig("local.db.database") + "."
 									  + ConfigReader.readConfig("local.db.collection");
-			System.out.println(uri);
 		}
 		if (uri!= null)
-			this.sparkContext = SparkContextFactory.create();
+			this.sparkContext = SparkContextFactory.create(uri);
+		System.out.println(uri);
 	}
 	
 	public JavaSparkContext getSparkContext() {

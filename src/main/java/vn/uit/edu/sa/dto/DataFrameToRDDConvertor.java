@@ -34,13 +34,14 @@ public class DataFrameToRDDConvertor {
 		});
 		
 		rdd = rdd.filter(new Function<PostDTO, Boolean>() {
-			
+		
 			@Override
 			public Boolean call(PostDTO v1) throws Exception {
 				return v1 != null;
 			}
 		});
-		
 		return rdd;
 	}
+	
+	
 }

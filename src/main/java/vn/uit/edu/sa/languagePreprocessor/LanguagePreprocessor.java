@@ -80,9 +80,9 @@ public class LanguagePreprocessor implements java.io.Serializable{
 		return rdd;
 	}
 	
-	public void run(JavaRDD<PostDTO> posts, String typeDetail) {
+	public JavaRDD<String>  run(JavaRDD<PostDTO> posts, String typeDetail) {
 		JavaRDD<String> result = run(posts);
-		save(result, typeDetail);
+		return result;
 	}
 	
 	public void save(JavaRDD<String> rdd) {

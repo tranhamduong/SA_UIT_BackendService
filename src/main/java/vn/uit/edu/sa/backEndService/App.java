@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.DataFrame;
 
 import vn.uit.edu.sa.connectDB.MongoSparkHelper;
@@ -26,21 +27,36 @@ public class App
         
 	    SparkConfigure sparkConfig = new SparkConfigure();
 	   
-    	//MongoSparkHelper remoteMongoHelper = new MongoSparkHelper(sparkConfig, true);
-    	MongoSparkHelper localMongoHelper = new MongoSparkHelper(sparkConfig, false);
+    	MongoSparkHelper remoteMongoHelper = new MongoSparkHelper(sparkConfig, true, "post");
+    	//MongoSparkHelper localMongoHelper = new MongoSparkHelper(sparkConfig, false);
     	
-    	DataFrame df = localMongoHelper.read("post");
-    	//System.out.println(df.count());
+    	DataFrame df = remoteMongoHelper.read("post");
     	df.show();
-    	System.out.println(df.count());
+    	//comment
+    	//createdDate:04
+    	//message:05
+    	//postId: 07
+    	
+    	//post: postedByUserId
+    	//post: _ids
     	
     	//Run on the first time
-    	JavaRDD<PostDTO> allPosts =  DataFrameToRDDConvertor.convertFromDataFrame(df);
-    	MonthCalculating monthCalculating = new MonthCalculating();
-    	monthCalculating.doSentimentAnalysFollowMonth(sparkConfig, allPosts);
+    	//JavaRDD<PostDTO> allPosts =  DataFrameToRDDConvertor.convertFromDataFrame(df);
+    	
+    	//allPosts.filter(new Function<PostDTO, Boolean>() {
+			
+//			@Override
+//			public Boolean call(PostDTO v1) throws Exception {
+//				
+//				return null;
+//			}
+//		});
+    	
+      	//MonthCalculating monthCalculating = new MonthCalculating();
+    	//monthCalculating.doSentimentAnalysFollowMonth(sparkConfig, allPosts);
     	//monthCalculating.showRDD();
     	
-    	//Run on upkkkmedate Data
+    	//Run on update Data
 //    	JavaRDD<PostDTO> onlyNewPosts = DataFrameToRDDConvertor.convertFromDataFrame(df);
 //    	
 //    	DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");

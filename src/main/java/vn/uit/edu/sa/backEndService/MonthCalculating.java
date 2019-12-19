@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.VoidFunction;
 
 import vn.uit.edu.sa.dto.PostDTO;
 import vn.uit.edu.sa.dto.Statistic;
@@ -49,9 +50,27 @@ public class MonthCalculating  implements Serializable{
 	JavaRDD<PostDTO> listNov;
 	JavaRDD<PostDTO> listDec;
 	
+	JavaRDD<String> listStrJan;
+	JavaRDD<String> listStrFeb;
+	JavaRDD<String> listStrMar;
+	JavaRDD<String> listStrApr;
+	JavaRDD<String> listStrMay;
+	JavaRDD<String> listStrJun;
+	JavaRDD<String> listStrJul;
+	JavaRDD<String> listStrAug;
+	JavaRDD<String> listStrSep;
+	JavaRDD<String> listStrOct;
+	JavaRDD<String> listStrNov;
+	JavaRDD<String> listStrDec;
+	
 	List<JavaRDD<PostDTO>> listMonthRdd;
+	
+	List<JavaRDD<String>> listMonthStringRdd;
 
-
+	int posTraining = 0;
+	int negTraining = 0;
+	int posFacility = 0;
+	int negFacility = 0;
 	
 	public MonthCalculating() {
 		
@@ -202,17 +221,74 @@ public class MonthCalculating  implements Serializable{
 		listMonthRdd.add(listSep);		listMonthRdd.add(listOct);
 		listMonthRdd.add(listNov);		listMonthRdd.add(listDec);
 		
+		
+		
 		LanguagePreprocessor.cleanDir();
 		LanguagePreprocessor preProcessor = new LanguagePreprocessor(spark, "all");
 		int month = 0;
 		for (JavaRDD<PostDTO> postRdd : listMonthRdd) {
 			if (postRdd.count() > 0) {
-				JavaRDD<String> stringRdd = RDDutils.convertFromPostDTOtoString(postRdd);
-				preProcessor.run(postRdd, getMonth(month));
+				switch(month) {
+				case 0:{
+					listStrJan = preProcessor.run(postRdd);
+					break;
+				}
+				case 1:{
+					listStrFeb = preProcessor.run(postRdd);
+					break;
+				}
+				case 2:{
+					listStrMar = preProcessor.run(postRdd);
+					break;
+				}
+				case 3:{
+					listStrApr = preProcessor.run(postRdd);
+					break;
+				}
+				case 4:{
+					listStrMay = preProcessor.run(postRdd);
+					break;
+				}
+				case 5:{
+					listStrJun = preProcessor.run(postRdd);
+					break;
+				}
+				case 6:{
+					listStrJul = preProcessor.run(postRdd);
+					break;
+				}
+				case 7:{
+					listStrAug = preProcessor.run(postRdd);
+					break;
+				}
+				case 8:{
+					listStrSep = preProcessor.run(postRdd);
+					break;
+				}
+				case 9:{
+					listStrOct = preProcessor.run(postRdd);
+					break;
+				}
+				case 10:{
+					listStrNov = preProcessor.run(postRdd);
+					break;
+				}
+				case 11:{
+					listStrDec = preProcessor.run(postRdd);
+					break;
+				}
+				}
 			}else
 				System.out.println("The month " + getMonth(month) + " has no entries.");
 			month++;
 		}
+		
+		listMonthStringRdd.add(listStrJan);		listMonthStringRdd.add(listStrFeb);
+		listMonthStringRdd.add(listStrMar);		listMonthStringRdd.add(listStrApr);
+		listMonthStringRdd.add(listStrMay);		listMonthStringRdd.add(listStrJun);
+		listMonthStringRdd.add(listStrJul);		listMonthStringRdd.add(listStrAug);
+		listMonthStringRdd.add(listStrSep);		listMonthStringRdd.add(listStrOct);
+		listMonthStringRdd.add(listStrNov);		listMonthStringRdd.add(listStrDec);
 		
 		doSentiment();
 	}
@@ -222,60 +298,59 @@ public class MonthCalculating  implements Serializable{
 		//false if in Training mode
 		try {
 			SentimentAnalyser model = new SentimentAnalyser(false);
-			for (int i = 0; i < 12; i++) {
-				File input = new File(System.getProperty("user.dir") + ConfigReader.readConfig("dir.pre.finish") + "/" + getMonth(i));
-				int posTraining = 0;
-				int negTraining = 0;
-				int posFacility = 0;
-				int negFacility = 0;
-				if (input.exists()) {
-					File[] inputFiles = input.listFiles();
-					System.out.println(System.getProperty("user.dir") + ConfigReader.readConfig("dir.pre.finish") + "/" + getMonth(i));
-					System.out.println(inputFiles.length);
-					for (File entry : inputFiles) {
-						List<String> entries = Files.readAllLines(Paths.get(entry.getAbsolutePath()));
-						for(String str : entries) {
-							double[] result = model.testSample(str);
-							if (result[0] > result[1]) {
-								if (result[2] > result[3]) {
-									posTraining++;
-								}else {
-									negTraining++;
-								}
+			int month = 0;
+			for (JavaRDD<String> strMonth : listMonthStringRdd) {
+
+				
+				strMonth.foreach(new VoidFunction<String>() {
+
+					@Override
+					public void call(String str) throws Exception {
+						double[] result = model.testSample(str);
+						if (result[0] > result[1]) {
+							if (result[2] > result[3]) {
+								posTraining++;
 							}else {
-								if (result[2] > result[3]) {
-									posFacility++;
-								}else {
-									negFacility++;
-								}
+								negTraining++;
+							}
+						}else {
+							if (result[2] > result[3]) {
+								posFacility++;
+							}else {
+								negFacility++;
 							}
 						}
 					}
-				}
-				if (i == 0) 
+				});		
+				
+				if (month == 0) 
 					Jan = new Statistic("MONTH", "Jan", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 1)
+				else if(month == 1)
 					Feb = new Statistic("MONTH", "Feb", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 2)
+				else if(month == 2)
 					Mar = new Statistic("MONTH", "Mar", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 3)
+				else if(month == 3)
 					Apr = new Statistic("MONTH", "Apr", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 4)
+				else if(month == 4)
 					May = new Statistic("MONTH", "May", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 5)
+				else if(month == 5)
 					Jun = new Statistic("MONTH", "Jun", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 6)
+				else if(month == 6)
 					Jul = new Statistic("MONTH", "Jul", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 7)
+				else if(month == 7)
 					Aug = new Statistic("MONTH", "Aug", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 8)
+				else if(month == 8)
 					Sep = new Statistic("MONTH", "Sep", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 9)
+				else if(month == 9)
 					Oct = new Statistic("MONTH", "Oct", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 10)
+				else if(month == 10)
 					Nov = new Statistic("MONTH", "Nov", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-				else if(i == 11)
+				else if(month == 11)
 					Dec = new Statistic("MONTH", "Dec", "Post", String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
+				
+				month++;
+				posTraining = 0; 			negTraining = 0;
+				posFacility = 0;			negFacility = 0;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -325,5 +400,4 @@ public class MonthCalculating  implements Serializable{
 			System.out.println("===========================");
 		}
 	}
-	
 }
