@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 
+import vn.uit.edu.sa.dto.DTO;
 import vn.uit.edu.sa.spark.SparkConfigure;
 import vn.uit.edu.sa.util.ConfigReader;
 
@@ -35,6 +36,22 @@ public class RemoveStopWords implements java.io.Serializable{
 				public String call(String v1) throws Exception {
 					String temp = removeStopWords(v1);
 					return temp;
+				}
+			});
+			return rdd;
+		}
+		
+		public JavaRDD<DTO>  correctDataDTO(SparkConfigure spark, JavaRDD<DTO> rdd) throws IOException {
+			this.spark = spark;
+			
+			stopWordSet = createListFromDictionary(spark);
+
+			rdd = rdd.map(new Function<DTO, DTO>() {
+
+				@Override
+				public DTO call(DTO dto) throws Exception {
+					dto.setMessage(removeStopWords(dto.getMessage()));
+					return dto;
 				}
 			});
 			return rdd;

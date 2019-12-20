@@ -2,8 +2,6 @@ package vn.uit.edu.sa.dto;
 
 import java.io.Serializable;
 
-import org.apache.spark.api.java.JavaRDD;
-
 public class Statistic implements Serializable {
 	@Override
 	public String toString() {
@@ -12,7 +10,6 @@ public class Statistic implements Serializable {
 				+ "]";
 	}
 
-	private String type = "";
 	public Statistic(String type, String typeDetail, String typeSource) {
 		super();
 		this.type = type;
@@ -23,7 +20,8 @@ public class Statistic implements Serializable {
 	public void setType(String type) {
 		this.type = type;
 	}
-
+	
+	private String type = "";
 	private String typeDetail = ""; // 
 	private String typeSource = ""; //Comment or Post
 	private String posTraining = "0";

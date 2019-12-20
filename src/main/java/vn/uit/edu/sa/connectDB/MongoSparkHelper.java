@@ -1,15 +1,8 @@
 package vn.uit.edu.sa.connectDB;
 
 
-import java.io.File;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-
-import javax.print.DocFlavor.STRING;
-
 import java.util.List;
 
 import org.apache.spark.SparkConf;
@@ -18,12 +11,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
 import org.bson.Document;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.types.DataType;
-import org.apache.spark.sql.types.StructType;
 
 import com.mongodb.spark.MongoSpark;
 import com.mongodb.spark.config.ReadConfig;

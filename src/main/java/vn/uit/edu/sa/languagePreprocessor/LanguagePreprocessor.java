@@ -5,9 +5,8 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.VoidFunction;
 
-import vn.uit.edu.sa.dto.PostDTO;
+import vn.uit.edu.sa.dto.DTO;
 import vn.uit.edu.sa.spark.SparkConfigure;
 import vn.uit.edu.sa.util.ConfigReader;
 import vn.uit.edu.sa.util.HelpFunction;
@@ -23,7 +22,6 @@ public class LanguagePreprocessor implements java.io.Serializable{
 
 	
 	public LanguagePreprocessor(SparkConfigure spark) {
-		clean();
 		this.spark = spark;
 		initialize();
 	}
@@ -54,37 +52,32 @@ public class LanguagePreprocessor implements java.io.Serializable{
 		removeStopWords = new RemoveStopWords();	
 	}
 	
-	public JavaRDD<String> run(JavaRDD<PostDTO> posts) {
+	
+	public JavaRDD<DTO> run(JavaRDD<DTO> rdd) {
 		
-		JavaRDD<String> rdd = RDDutils.convertFromPostDTOtoString(posts);
+		//JavaRDD<String> rdd = RDDutils.convertFromDTOtoString(posts);
 		
-		rdd = rdd.map(new Function<String, String>() {
+		rdd = rdd.map(new Function<DTO, DTO>() {
 
 			@Override
-			public String call(String v1) throws Exception {
-				return standardize.standardizeSentence(spark, v1);
+			public DTO call(DTO dto) {
+				dto.setMessage(standardize.standardizeSentence(spark, dto.getMessage()));
+				return dto;
 			}
 		});
 		
-		rdd = segmentation.wordSegmentation(spark, rdd);
+		rdd = segmentation.wordSegmentationDTO(spark, rdd);
 				
 		try {
-			rdd = removeStopWords.correctData(spark, rdd);
+			rdd = removeStopWords.correctDataDTO(spark, rdd);
 			rdd = RDDutils.removeEmptyRow(rdd);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		RDDutils.showStringRDD(rdd);
-		
+			
 		return rdd;
 	}
-	
-	public JavaRDD<String>  run(JavaRDD<PostDTO> posts, String typeDetail) {
-		JavaRDD<String> result = run(posts);
-		return result;
-	}
-	
+		
 	public void save(JavaRDD<String> rdd) {
 		rdd.saveAsTextFile(System.getProperty("user.dir") + ConfigReader.readConfig("dir.pre.finish"));
 		HelpFunction.removeUnusedFile();
