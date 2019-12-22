@@ -43,6 +43,11 @@ public class DTO implements Serializable{
 		this.postedByUserId = postedByUserId;
 	}
 
+	@Override
+	public String toString() {
+		return "DTO [createdDate=" + createdDate + "]";
+	}
+
 	public String getPostId() {
 		return postId;
 	}

@@ -1,6 +1,7 @@
 package vn.uit.edu.sa.connectDB;
 
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -22,7 +23,7 @@ import vn.uit.edu.sa.spark.SparkConfigure;
 import vn.uit.edu.sa.util.ConfigReader;
 import vn.vitk.util.SparkContextFactory;
 
-public class MongoSparkHelper<T> {
+public class MongoSparkHelper<T> implements Serializable{
 	
 	private JavaSparkContext sparkContext;
 

@@ -1,5 +1,6 @@
 package vn.uit.edu.sa.backEndService;
 
+import java.io.Serializable;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -10,12 +11,12 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import vn.uit.edu.sa.dto.DTO;
+import vn.uit.edu.sa.util.HelpFunction;
+import vn.uit.edu.sa.util.RDDutils;
 
-public class DataFilter {
+public class DataFilter implements Serializable {
 	private List<String> universityFanpageIds;
 	
 	private List<String> universityGroupIds;
@@ -26,6 +27,10 @@ public class DataFilter {
 	
 	public DataFilter() {
 		postIds = new ArrayList<String>();
+		universityFanpageIds = HelpFunction.getUniversityFanpageIdList();
+		
+		for(String str : universityFanpageIds) 
+			System.out.println(str);
 	}
 	
 	public JavaRDD<DTO> postDTOFilterFactory(JavaRDD<DTO> rdd, String[] parameters){		
@@ -42,7 +47,7 @@ public class DataFilter {
 			
 			@Override
 			public Boolean call(DTO dto) throws Exception {
-				if (universityFanpageIds.contains(dto.getPostedByUserId()) || universityGroupIds.contains(dto.getPostedByUserId())) {
+				if (universityFanpageIds.contains(dto.getPostedByUserId()) ) {
 					if (dto.getCreatedDate().compareTo(date) > 0) {
 						postIds.add(dto.getPostId());
 						return true;
@@ -51,7 +56,7 @@ public class DataFilter {
 				return false;
 			}
 		});
-		
+		rdd = RDDutils.removeEmptyRow(rdd);
 		return rdd;
 	}
 	
@@ -83,7 +88,8 @@ public class DataFilter {
 
 	public JavaRDD<DTO> weekPostDTPFilterFactory(JavaRDD<DTO> rdd, String[] parameters) {
 		date = null;
-    	
+		
+    	JavaRDD<DTO> result;
     	DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
     	
 		try {
@@ -93,11 +99,11 @@ public class DataFilter {
 			e.printStackTrace();
 		}
 	
-		Calendar cal = Calendar.getInstance();
+		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		cal.add(Calendar.DATE, -6);
-			
-    	rdd = rdd.filter(new Function<DTO, Boolean>() {
+		
+		result = rdd.filter(new Function<DTO, Boolean>() {
 			
 			@Override
 			public Boolean call(DTO dto) throws Exception {
@@ -108,6 +114,9 @@ public class DataFilter {
 			}
 		});
     	
-		return rdd;
+    	if (result.count() == 0)
+    		return null;
+    	
+    	return result;
 	}
 }

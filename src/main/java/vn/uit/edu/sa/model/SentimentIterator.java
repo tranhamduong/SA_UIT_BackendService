@@ -2,6 +2,7 @@ package vn.uit.edu.sa.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.FileUtils;
@@ -21,7 +22,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.deeplearning4j.datasets.iterator.*;
 
 
-public class SentimentIterator implements DataSetIterator{
+public class SentimentIterator implements DataSetIterator, Serializable{
 	/**
 	 * Declare variables
 	 */

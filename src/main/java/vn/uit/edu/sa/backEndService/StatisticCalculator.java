@@ -5,14 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 
+import akka.japi.Util;
 import vn.uit.edu.sa.dto.DTO;
 import vn.uit.edu.sa.dto.Statistic;
 import vn.uit.edu.sa.languagePreprocessor.LanguagePreprocessor;
 import vn.uit.edu.sa.model.SentimentAnalyser;
 import vn.uit.edu.sa.spark.SparkConfigure;
 import vn.uit.edu.sa.util.HelpFunction;
+import vn.uit.edu.sa.util.RDDutils;
 
 public class StatisticCalculator  implements Serializable{
 	
@@ -20,7 +23,9 @@ public class StatisticCalculator  implements Serializable{
 	
 	private double[] result;
 	
-	List<Statistic> listMonth;
+	public static List<Statistic> listMonth;
+	public List<Statistic> resultList;
+	public List<Statistic> tempList;
 	
 	JavaRDD<DTO> monthRDD;
 	
@@ -33,9 +38,13 @@ public class StatisticCalculator  implements Serializable{
 	int posFacility = 0;
 	int negFacility = 0;
 	
+	SentimentAnalyser model ;
+	
 	public StatisticCalculator() {
 		
 		listMonth = new ArrayList<Statistic>();
+		resultList = new ArrayList<Statistic>();
+		tempList = new ArrayList<Statistic>();
 		
 		listMonthRdd = new ArrayList<JavaRDD<DTO>>();
 		
@@ -48,9 +57,9 @@ public class StatisticCalculator  implements Serializable{
 	}
 	
 	
-	public void doSentimentAnalyst(SparkConfigure spark, JavaRDD<DTO> rdd, String type, String typeSource) {
+	public void doSentimentAnalyst(SparkConfigure spark, JavaRDD<DTO> rdd, final String type, final String typeSource) {
 		try {
-			SentimentAnalyser model = new SentimentAnalyser(false);
+			model = new SentimentAnalyser(false);
 			LanguagePreprocessor preProcessor = new LanguagePreprocessor(spark);
 			
 			rdd = preProcessor.run(rdd);
@@ -62,7 +71,6 @@ public class StatisticCalculator  implements Serializable{
 					result = null;
 					stat = null;
 					result = model.testSample(dto.getMessage());
-					
 					if (result[0] > result[1]) {
 						if (result[2] > result[3]) {
 							posTraining++;
@@ -76,19 +84,35 @@ public class StatisticCalculator  implements Serializable{
 							negFacility++;
 						}
 					}
-					
-					for (Statistic month : listMonth) {
-						if (month.getType().equals(type) && month.getTypeDetail().equals(HelpFunction.getMonth(dto.getMonth())) && month.getTypeSource().equals(typeSource)) {
-							month.setPosFacility(month.getPosFacility() + posFacility);
-							month.setPosTraining(month.getPosTraining() + posTraining);
-							month.setNegFacility(month.getNegFacility() + negFacility);
-							month.setNegTraining(month.getNegTraining() + negTraining);
-						}else {
-							stat = new Statistic(type, HelpFunction.getMonth(dto.getMonth()), typeSource, String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
-							listMonth.add(stat);
-						}
+										
+					if (listMonth.size() == 0) {
+						stat = new Statistic(type, HelpFunction.getMonth(dto.getMonth()), typeSource, String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
+						listMonth.add(stat);
 					}
-					
+					Boolean ifExists = false;
+
+					try {
+						if (listMonth.size() > 0) {
+							for (Statistic month : listMonth) {
+								if (month.getType().equals(type) && month.getTypeDetail().equals(HelpFunction.getMonth(dto.getMonth())) && month.getTypeSource().equals(typeSource)) {
+									ifExists = true;
+									month.setPosFacility(String.valueOf(Integer.parseInt(month.getPosFacility()) + posFacility));
+									month.setPosTraining(String.valueOf(Integer.parseInt(month.getPosTraining()) + posTraining));
+									month.setNegFacility(String.valueOf(Integer.parseInt(month.getNegTraining()) + negTraining));
+									month.setNegTraining(String.valueOf(Integer.parseInt(month.getNegFacility()) + negFacility));
+									break;
+									}
+							}
+							
+							if (!ifExists) {
+								stat = new Statistic(type, HelpFunction.getMonth(dto.getMonth()), typeSource, String.valueOf(posTraining), String.valueOf(negTraining), String.valueOf(posFacility), String.valueOf(negFacility));
+								listMonth.add(stat); 
+							}
+						}
+					}catch(java.util.ConcurrentModificationException e) {
+						e.printStackTrace();
+					}
+										
 					posTraining = 0;
 					posFacility = 0;
 					negFacility = 0;
@@ -113,6 +137,8 @@ public class StatisticCalculator  implements Serializable{
 	}
 	
 	public void show() {
+		System.out.println("SHOWING RESULT LIST!");
+		if (listMonth.size() == 0) System.out.println("EMPTY");
 		for(Statistic month : listMonth) {
 			System.out.println(month.getTypeDetail() + " : Training: " + month.getPosTraining() + "-" + month.getNegTraining());
 			System.out.println(month.getTypeDetail() + " : Facility: " + month.getPosFacility() + "-" + month.getNegFacility());

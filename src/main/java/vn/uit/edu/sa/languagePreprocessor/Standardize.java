@@ -60,6 +60,7 @@ public class Standardize implements java.io.Serializable {
 	
 	public DataFrame getSocialLanguageDictionary(SparkConfigure spark) {
 		String socialLanguageDictionaryName = System.getProperty("user.dir") + ConfigReader.readConfig("dic.pre.social");
+		System.out.println(">>>>> " + socialLanguageDictionaryName);
 		
 		SQLContext sqlContext = new SQLContext(spark.getSparkContext());
 		

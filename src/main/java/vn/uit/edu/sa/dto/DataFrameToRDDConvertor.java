@@ -19,7 +19,7 @@ public class DataFrameToRDDConvertor {
 
 				if (!row.isNullAt(19)) {
 					if (!row.getString(19).equals("NOTE") && !row.getString(19).equals("VIDEO") && !row.getString(19).equals("EVENT")){
-						post.setPostType(row.getString(19));
+						post.setPostType("POST");
 					}else return null;
 				} else return null;
 				
@@ -38,12 +38,12 @@ public class DataFrameToRDDConvertor {
 					post.setMessage(row.getString(13));
 				else return null;
 				
-				if (!row.isNullAt(0)) 
-					post.setPostId(row.getString(0));
+				if (!row.isNullAt(1)) 
+					post.setPostId(row.getString(1));
 				else return null;
 				
-				if (!row.isNullAt(1))
-					post.setPostedByUserId(row.getString(1));
+				if (!row.isNullAt(21))
+					post.setPostedByUserId(row.getString(21));
 				else return null;
 				
 				return post;

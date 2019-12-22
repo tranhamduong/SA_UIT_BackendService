@@ -2,6 +2,7 @@ package vn.uit.edu.sa.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
@@ -13,7 +14,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import vn.uit.edu.sa.util.ConfigReader;
 
 
-public class SentimentAnalyser {
+public class SentimentAnalyser implements Serializable {
 	private static SentimentIterator train;
 	private static SentimentIterator test;
 	private static MultiLayerNetwork net;

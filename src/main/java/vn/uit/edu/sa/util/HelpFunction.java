@@ -1,49 +1,15 @@
 package vn.uit.edu.sa.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 
 public class HelpFunction {
-	
-	public static Optional<String> getExtensionByStringHandling(String filename) {
-	    return Optional.ofNullable(filename)
-	      .filter(f -> f.contains("."))
-	      .map(f -> f.substring(filename.lastIndexOf(".") + 1));
-	}
-	
-	public static void removeUnusedFile() {
-		File folder = new File(System.getProperty("user.dir") + ConfigReader.readConfig("dir.pre.finish"));
-		File[] listOfFiles = folder.listFiles();
-		for(File file : listOfFiles) {
-			if (HelpFunction.getExtensionByStringHandling(file.getName()).equals(".crc")) {
-				file.delete();
-			}else if (file.getName() == "SUCCESS") {
-				file.delete();
-			}else if (file.length() == 0) {
-				file.delete();
-			}else if (file.isHidden()) {
-				file.delete();
-			}
-		}
-	}
-	
-	public static void removeUnusedFile(String fileName) {
-		File folder = new File(System.getProperty("user.dir") + fileName);
-		File[] listOfFiles = folder.listFiles();
-		for(File file : listOfFiles) {
-			if (HelpFunction.getExtensionByStringHandling(file.getName()).equals(".crc")) {
-				file.delete();
-			}else if (file.getName() == "SUCCESS") {
-				file.delete();
-			}else if (file.length() == 0) {
-				file.delete();
-			}else if (file.isHidden()) {
-				file.delete();
-			}
-		}
-	}
 	
 	public static String getDayOfWeek(Date date) {
 		Calendar cal = Calendar.getInstance();
@@ -73,5 +39,15 @@ public class HelpFunction {
 		if (month == 9) return "Oct";
 		if (month == 10) return "Nov";
 		return "Dec";
+	}
+	
+	public static List<String> getUniversityFanpageIdList(){
+		try {
+			return Files.readAllLines(Paths.get(System.getProperty("user.dir") + "/" + ConfigReader.readConfig("dir.list.university.fanpage")));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 }

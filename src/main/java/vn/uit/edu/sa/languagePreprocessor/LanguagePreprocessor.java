@@ -57,6 +57,8 @@ public class LanguagePreprocessor implements java.io.Serializable{
 		
 		//JavaRDD<String> rdd = RDDutils.convertFromDTOtoString(posts);
 		
+		System.out.println("RDD count: "  + rdd.count());
+		
 		rdd = rdd.map(new Function<DTO, DTO>() {
 
 			@Override
@@ -66,29 +68,25 @@ public class LanguagePreprocessor implements java.io.Serializable{
 			}
 		});
 		
+		System.out.println("RDD standardize count: "  + rdd.count());
+
+		//RDDutils.show(rdd);
+		System.out.println("CHECKPOINT0");
+
 		rdd = segmentation.wordSegmentationDTO(spark, rdd);
-				
+		System.out.println("CHECKPOINT1");
+		//System.out.println("RDD segmentation count: "  + rdd.count());
+
 		try {
 			rdd = removeStopWords.correctDataDTO(spark, rdd);
 			rdd = RDDutils.removeEmptyRow(rdd);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-			
+
+		System.out.println("RDD stopwords count: "  + rdd.count());
+
 		return rdd;
-	}
-		
-	public void save(JavaRDD<String> rdd) {
-		rdd.saveAsTextFile(System.getProperty("user.dir") + ConfigReader.readConfig("dir.pre.finish"));
-		HelpFunction.removeUnusedFile();
-	}
-	
-	public void save(JavaRDD<String> rdd, String typeDetail) {
-		rdd.saveAsTextFile(System.getProperty("user.dir") + ConfigReader.readConfig("dir.pre.finish") + "/" + typeDetail);
-		HelpFunction.removeUnusedFile();
-		for(int i = 0; i <= 11; i++) {
-			HelpFunction.removeUnusedFile(ConfigReader.readConfig("dir.pre.finish") + "/" + typeDetail);
-		}
 	}
 	
 	public void runVectorize() {

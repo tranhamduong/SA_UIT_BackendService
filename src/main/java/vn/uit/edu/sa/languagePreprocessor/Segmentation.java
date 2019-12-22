@@ -5,6 +5,7 @@ import org.apache.spark.api.java.function.Function;
 
 import vn.uit.edu.sa.dto.DTO;
 import vn.uit.edu.sa.spark.SparkConfigure;
+import vn.uit.edu.sa.util.RDDutils;
 import vn.vitk.tok.Tokenizer;
 
 public class Segmentation implements java.io.Serializable{
@@ -26,21 +27,20 @@ public class Segmentation implements java.io.Serializable{
 		return tokenizer.tokenize(inputRDD);
     }
 	
-	public JavaRDD<DTO> wordSegmentationDTO(SparkConfigure spark, JavaRDD<DTO> inputRDD) {
+	public JavaRDD<DTO> wordSegmentationDTO(final SparkConfigure spark, JavaRDD<DTO> inputRDD) {
 		String dataFolder = "/export/dat/tok";
 		String master = spark.getSparkConf().get("spark.master");	
 		
 		tokenizer = new Tokenizer(master, dataFolder + "/lexicon.xml", dataFolder + "/regexp.txt", dataFolder + "/syllables2M.arpa");
-		
-		inputRDD = inputRDD.map(new Function<DTO, DTO>() {
+		JavaRDD<DTO> res = null;
+		res = inputRDD.map(new Function<DTO, DTO>() {
 
 			@Override
 			public DTO call(DTO dto) throws Exception {
-				dto.setMessage(tokenizer.tokenizeOneLine(dto.getMessage()));
-				return null;
+				dto.setMessage(tokenizer.tokenizeOneLine(spark, dto.getMessage()));
+				return dto;
 			}
 		});
-		
 		return inputRDD;
     }
 }
