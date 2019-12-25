@@ -57,8 +57,6 @@ public class LanguagePreprocessor implements java.io.Serializable{
 		
 		//JavaRDD<String> rdd = RDDutils.convertFromDTOtoString(posts);
 		
-		System.out.println("RDD count: "  + rdd.count());
-		
 		rdd = rdd.map(new Function<DTO, DTO>() {
 
 			@Override
@@ -68,14 +66,7 @@ public class LanguagePreprocessor implements java.io.Serializable{
 			}
 		});
 		
-		System.out.println("RDD standardize count: "  + rdd.count());
-
-		//RDDutils.show(rdd);
-		System.out.println("CHECKPOINT0");
-
 		rdd = segmentation.wordSegmentationDTO(spark, rdd);
-		System.out.println("CHECKPOINT1");
-		//System.out.println("RDD segmentation count: "  + rdd.count());
 
 		try {
 			rdd = removeStopWords.correctDataDTO(spark, rdd);
@@ -83,8 +74,6 @@ public class LanguagePreprocessor implements java.io.Serializable{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		System.out.println("RDD stopwords count: "  + rdd.count());
 
 		return rdd;
 	}

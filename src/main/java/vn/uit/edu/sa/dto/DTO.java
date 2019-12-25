@@ -11,7 +11,37 @@ public class DTO implements Serializable{
 	private String message;
 	private Date createdDate;
 	private int month;
+	private String groupId;
+	private String dayOfWeek;
 	
+	public String getDayOfWeek() {
+		return dayOfWeek;
+	}
+
+	public void setDayOfWeek(String dayOfWeek) {
+		this.dayOfWeek = dayOfWeek;
+	}
+
+	public DTO(String postId, String postType, String postedByUserId, String message, Date createdDate, int month,
+			String groupId) {
+		super();
+		this.postId = postId;
+		this.postType = postType;
+		this.postedByUserId = postedByUserId;
+		this.message = message;
+		this.createdDate = createdDate;
+		this.month = month;
+		this.groupId = groupId;
+	}
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
 	public DTO(String postId, String postType, String postedByUserId, String message, Date createdDate, int month) {
 		super();
 		this.postId = postId;
@@ -45,7 +75,7 @@ public class DTO implements Serializable{
 
 	@Override
 	public String toString() {
-		return "DTO [createdDate=" + createdDate + "]";
+		return "DTO [createdDate=" + createdDate + ", postType = " + this.postType + ", postId = " + this.postId + "]";
 	}
 
 	public String getPostId() {

@@ -40,10 +40,20 @@ public class HelpFunction {
 		if (month == 10) return "Nov";
 		return "Dec";
 	}
-	
+		
 	public static List<String> getUniversityFanpageIdList(){
 		try {
 			return Files.readAllLines(Paths.get(System.getProperty("user.dir") + "/" + ConfigReader.readConfig("dir.list.university.fanpage")));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public static List<String> getUniversityGroupIdList(){
+		try {
+			return Files.readAllLines(Paths.get(System.getProperty("user.dir") + "/" + ConfigReader.readConfig("dir.list.university.group")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

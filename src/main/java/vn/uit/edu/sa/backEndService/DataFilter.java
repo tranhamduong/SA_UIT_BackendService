@@ -20,7 +20,7 @@ public class DataFilter implements Serializable {
 	private List<String> universityFanpageIds;
 	
 	private List<String> universityGroupIds;
-	private List<String> postIds;
+	private static List<String> postIds;
 	
 	private Date date = null;
 
@@ -29,8 +29,11 @@ public class DataFilter implements Serializable {
 		postIds = new ArrayList<String>();
 		universityFanpageIds = HelpFunction.getUniversityFanpageIdList();
 		
-		for(String str : universityFanpageIds) 
-			System.out.println(str);
+		universityGroupIds = HelpFunction.getUniversityGroupIdList();
+	}
+	
+	public List<String> getPostIds() {
+		return postIds;
 	}
 	
 	public JavaRDD<DTO> postDTOFilterFactory(JavaRDD<DTO> rdd, String[] parameters){		
@@ -43,20 +46,39 @@ public class DataFilter implements Serializable {
 			e.printStackTrace();
 		}
 		
-		rdd = rdd.filter(new Function<DTO, Boolean>() {
-			
-			@Override
-			public Boolean call(DTO dto) throws Exception {
-				if (universityFanpageIds.contains(dto.getPostedByUserId()) ) {
-					if (dto.getCreatedDate().compareTo(date) > 0) {
-						postIds.add(dto.getPostId());
-						return true;
-					}				
+			rdd = rdd.filter(new Function<DTO, Boolean>() {
+				
+				@Override
+				public Boolean call(DTO dto) throws Exception {
+					
+					if (dto.getPostType().equals("GROUP")) {
+						if (universityGroupIds.contains((dto.getGroupId()))){
+							if (dto.getCreatedDate().compareTo(date) > 0) {
+								dto.setPostType("POST");
+								if (!postIds.contains(dto.getPostId())) {
+									postIds.add(dto.getPostId());
+								}
+								return true;
+							}
+						}
+					}else {
+						if (universityFanpageIds.contains(dto.getPostedByUserId())) {
+						if (dto.getCreatedDate().compareTo(date) > 0) {
+							if (!postIds.contains(dto.getPostId())) {
+								postIds.add(dto.getPostId());
+							}
+							return true;
+						}				
+					}
+					}
+					return false;
 				}
-				return false;
-			}
-		});
+			});
+		
+
+		
 		rdd = RDDutils.removeEmptyRow(rdd);
+
 		return rdd;
 	}
 	
@@ -107,8 +129,61 @@ public class DataFilter implements Serializable {
 			
 			@Override
 			public Boolean call(DTO dto) throws Exception {
-				if (dto.getCreatedDate().before(date) && dto.getCreatedDate().after(cal.getTime())){
-					return true;
+				if (universityFanpageIds.contains(dto.getPostedByUserId())) {
+					if (dto.getCreatedDate().before(date) && dto.getCreatedDate().after(cal.getTime())) {
+						dto.setDayOfWeek(HelpFunction.getDayOfWeek(dto.getCreatedDate()));
+						if (!postIds.contains(dto.getPostId()))
+							postIds.add(dto.getPostId());
+						return true;
+					}				
+				}
+				if (dto.getPostType().equals("GROUP") && dto.getGroupId()!= null) {
+					if (universityGroupIds.contains((dto.getGroupId()))){
+						if (dto.getCreatedDate().before(date) && dto.getCreatedDate().after(cal.getTime())) {
+							dto.setDayOfWeek(HelpFunction.getDayOfWeek(dto.getCreatedDate()));
+							if (!postIds.contains(dto.getPostId()))
+								postIds.add(dto.getPostId());
+							System.out.println("GROUP");
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+		});
+    	
+    	if (result.count() == 0)
+    		return null;
+    	
+    	return result;
+	}
+	
+	public JavaRDD<DTO> weekCommentDTPFilterFactory(JavaRDD<DTO> rdd, String[] parameters) {
+		date = null;
+		
+    	JavaRDD<DTO> result;
+    	DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+    	
+		try {
+			date = new java.sql.Date(dateFormat.parse(parameters[0]).getTime());
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.DATE, -6);
+		
+		result = rdd.filter(new Function<DTO, Boolean>() {
+			
+			@Override
+			public Boolean call(DTO dto) throws Exception {
+				if (postIds.contains(dto.getPostId())) {
+					if (dto.getCreatedDate().before(date) && dto.getCreatedDate().after(cal.getTime())){
+						dto.setDayOfWeek(HelpFunction.getDayOfWeek(dto.getCreatedDate()));
+						return true;
+					}
 				}
 				return false;
 			}
