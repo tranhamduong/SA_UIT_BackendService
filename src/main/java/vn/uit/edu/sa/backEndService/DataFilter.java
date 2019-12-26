@@ -143,7 +143,6 @@ public class DataFilter implements Serializable {
 							dto.setDayOfWeek(HelpFunction.getDayOfWeek(dto.getCreatedDate()));
 							if (!postIds.contains(dto.getPostId()))
 								postIds.add(dto.getPostId());
-							System.out.println("GROUP");
 							return true;
 						}
 					}

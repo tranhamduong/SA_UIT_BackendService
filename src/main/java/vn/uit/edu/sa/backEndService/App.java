@@ -16,6 +16,7 @@ import scala.Function1;
 import vn.uit.edu.sa.connectDB.ConnectMongoDB;
 import vn.uit.edu.sa.connectDB.MongoSparkHelper;
 import vn.uit.edu.sa.dto.DataFrameToRDDConvertor;
+import vn.uit.edu.sa.dto.Statistic;
 import vn.uit.edu.sa.dto.DTO;
 import vn.uit.edu.sa.spark.SparkConfigure;
 import vn.uit.edu.sa.util.ConfigReader;
@@ -34,12 +35,12 @@ public class App
         MongoClient mongoDB = ConnectMongoDB.ConnectMongoDB(ConfigReader.readConfig("local.db.url"), Integer.valueOf(ConfigReader.readConfig("local.db.port")));
         
         ConnectMongoDB mongoDBConnection = new ConnectMongoDB(mongoDB);
-        
-        mongoDBConnection.addOrUpdateNewDocument(null);
+         
+//        mongoDBConnection.addOrUpdateNewDocument(null);
        
         
-//	    SparkConfigure sparkConfig = new SparkConfigure();
-//	    MongoSparkHelper mongod = null;
+	    SparkConfigure sparkConfig = new SparkConfigure();
+	    MongoSparkHelper mongod = null;
 	    
 //	    if (args[0].equals("remote")){
 //    	mongod = new MongoSparkHelper(sparkConfig, true, "post");
@@ -47,16 +48,19 @@ public class App
 //    	mongod = new MongoSparkHelper(sparkConfig, false, "post");
 //    }
     
-//    mongod = new MongoSparkHelper(sparkConfig, true, "post");
+    mongod = new MongoSparkHelper(sparkConfig, true, "post");
 
 	    	
-//	DataFrame postDF = mongod.read("post");   
-//	DataFrame commentDF = mongod.read("comment");
-//	int numOfPostDFColumns = postDF.columns().length;
-//	int numOfCommentDFColumns = commentDF.columns().length;
-//	postDF.show();
-//	commentDF.show();
+	DataFrame postDF = mongod.read("post");   
+	DataFrame commentDF = mongod.read("comment");
 	
+	int numOfPostDFColumns = postDF.columns().length;
+	int numOfCommentDFColumns = commentDF.columns().length;
+	
+	postDF.show();
+	commentDF.show();
+	System.out.println(numOfPostDFColumns);
+	System.out.println(numOfCommentDFColumns);
 		
 	//comment
 	//createdDate:04
@@ -66,37 +70,37 @@ public class App
 	//post: postedByUserId
 	//post: _ids
 	
-//	String param = "01-01-2019";
+	String param = "01-01-2019";
 	
 	//Run on the first time
-//	JavaRDD<DTO> postRDD =  DataFrameToRDDConvertor.convertFromDataFrameToPostDTO(postDF, numOfPostDFColumns);
-//	JavaRDD<DTO> commentRDD = DataFrameToRDDConvertor.convertFromDataFrameToCommentDTO(commentDF, numOfCommentDFColumns);
+	JavaRDD<DTO> postRDD =  DataFrameToRDDConvertor.convertFromDataFrameToPostDTO(postDF, numOfPostDFColumns);
+	JavaRDD<DTO> commentRDD = DataFrameToRDDConvertor.convertFromDataFrameToCommentDTO(commentDF, numOfCommentDFColumns);
 	
-//	DataFilter filter = new DataFilter();
+	DataFilter filter = new DataFilter();
 //  	StatisticCalculator statisticCalculator = new StatisticCalculator();
-//        StatisticCalculator statisticCalculator = new StatisticCalculator(mongoDBConnection.getData());
+    StatisticCalculator statisticCalculator = new StatisticCalculator(mongoDBConnection.getData());
 
 	//post filter must be run first to avoid empty postIds list.
-//	JavaRDD<DTO> monthPostRDD = filter.postDTOFilterFactory(postRDD, new String[] {param});
-//	JavaRDD<DTO> monthCommentRDD = filter.commentDTOFilterFactory(commentRDD, new String[] {param});
-//	JavaRDD<DTO> weekPostRDD = filter.weekPostDTPFilterFactory(postRDD, new String[] {param});
-//	JavaRDD<DTO> weekCommentRDD = filter.weekCommentDTPFilterFactory(commentRDD, new String[] {param});
+	JavaRDD<DTO> monthPostRDD = filter.postDTOFilterFactory(postRDD, new String[] {param});
+	JavaRDD<DTO> monthCommentRDD = filter.commentDTOFilterFactory(commentRDD, new String[] {param});
+	JavaRDD<DTO> weekPostRDD = filter.weekPostDTPFilterFactory(postRDD, new String[] {param});
+	JavaRDD<DTO> weekCommentRDD = filter.weekCommentDTPFilterFactory(commentRDD, new String[] {param});
 	
-//  	statisticCalculator.doSentimentAnalyst(sparkConfig, monthPostRDD, "MONTH", "POST");
-//  	statisticCalculator.doSentimentAnalyst(sparkConfig, monthCommentRDD, "MONTH", "COMMENT");
+  	statisticCalculator.doSentimentAnalyst(sparkConfig, monthPostRDD, "MONTH", "POST", mongoDBConnection);
+  	statisticCalculator.doSentimentAnalyst(sparkConfig, monthCommentRDD, "MONTH", "COMMENT", mongoDBConnection);
 
-//	if (weekPostRDD == null)
-//		System.out.println("There are no records in post from last 7 days!");
-//	else {
-//	  	statisticCalculator.doSentimentAnalyst(sparkConfig, weekPostRDD, "WEEK", "POST");
-//	}
-//	
-//	if (weekCommentRDD == null)
-//		System.out.println("There are no records in comment from last 7 days!");
-//	else {
-//	  	statisticCalculator.doSentimentAnalyst(sparkConfig, weekCommentRDD, "WEEK", "COMMENT");
-//	}
-
+	if (weekPostRDD == null)
+		System.out.println("There are no records in post from last 7 days!");
+	else {
+	  	statisticCalculator.doSentimentAnalyst(sparkConfig, weekPostRDD, "WEEK", "POST", mongoDBConnection);
+	}
+	
+	if (weekCommentRDD == null)
+		System.out.println("There are no records in comment from last 7 days!");
+	else {
+	  	statisticCalculator.doSentimentAnalyst(sparkConfig, weekCommentRDD, "WEEK", "COMMENT", mongoDBConnection);
+	}
+	
   	//statisticCalculator.doSentimentAnalyst(sparkConfig, weekCommentRDD, "WEEK", "COMMENT");
   	
   	//statisticCalculator.show();

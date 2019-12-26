@@ -69,13 +69,13 @@ public class StatisticCalculator  implements Serializable{
 		listMonth = list;
 	}
 	
-	public void doSentimentAnalystWithAlreadyData(SparkConfigure spark, JavaRDD<DTO> rdd, String type, String typeSource, List<Statistic> list) {
+	public void doSentimentAnalystWithAlreadyData(SparkConfigure spark, JavaRDD<DTO> rdd, String type, String typeSource, List<Statistic> list, ConnectMongoDB mongoDB) {
 		listMonth = list;
-		doSentimentAnalyst(spark, rdd, type, typeSource);
+		doSentimentAnalyst(spark, rdd, type, typeSource, mongoDB);
 	}
 	
 	
-	public void doSentimentAnalyst(SparkConfigure spark, JavaRDD<DTO> rdd, final String type, final String typeSource) {
+	public void doSentimentAnalyst(SparkConfigure spark, JavaRDD<DTO> rdd, final String type, final String typeSource, ConnectMongoDB mongoDB) {
 		listMonth = new ArrayList<Statistic>();
 		try {
 			model = new SentimentAnalyser(false);
@@ -161,6 +161,7 @@ public class StatisticCalculator  implements Serializable{
 		}
 		
 		show(type, typeSource);
+		updateToDB(mongoDB);
 	}
 
 	public void showRDD() {
@@ -185,16 +186,10 @@ public class StatisticCalculator  implements Serializable{
 		}
 	}
 	
-	public void updateToDB(MongoClient mongoClient) {
-		ConnectMongoDB mongoDB = new ConnectMongoDB(mongoClient);
-		
-		DB db = mongoClient.getDB(ConfigReader.readConfig("local.db.database"));
-		
-		DBCollection collection = db.getCollection(ConfigReader.readConfig("local.db.collection"));
-		
+	public void updateToDB(ConnectMongoDB mongoDB) {
+		System.out.println("UPDATE TO MONGODB " + listMonth.size()); 
 		for (Statistic month : listMonth) {
 			mongoDB.addOrUpdateNewDocument(month);
 		}
-		
 	}
 }

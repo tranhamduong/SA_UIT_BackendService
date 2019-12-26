@@ -52,19 +52,14 @@ public class ConnectMongoDB {
 		
         MongoCollection<Document> collection = database.getCollection(ConfigReader.readConfig("local.db.collection"));
 		
-//		String type = statistic.getType();
-//		String typeDetail = statistic.getTypeDetail();
-//		String typeSource = statistic.getTypeSource();
+		String type = statistic.getType();
+		String typeDetail = statistic.getTypeDetail();
+		String typeSource = statistic.getTypeSource();
 		
-//        Document query = new Document();
-//        query.append("type", type);
-//        query.append("typeDetail", typeDetail);
-//        query.append("typeSource", typeSource);
-        
         Document query = new Document();
-        query.append("type", "MONTH");
-        query.append("typeDetail", "FEB");
-        query.append("typeSource", "POST");
+        query.append("type", type);
+        query.append("typeDetail", typeDetail);
+        query.append("typeSource", typeSource);
                 
         Document result =  collection.find(query).first();        
         
@@ -115,6 +110,7 @@ public class ConnectMongoDB {
 //								.append("posFacility", "700")
 //								.append("negFacility", "600");
 		
+		System.out.println(checkIfDocumentExists(statistic));
 		if (!checkIfDocumentExists(statistic)) {
 			collection.insertOne(doc);			
 		}else{
@@ -122,6 +118,8 @@ public class ConnectMongoDB {
 			//collection.updateOne(Filters.and(Filters.eq("type", "MONTH"), Filters.eq("typeDetail", "FEB"), Filters.eq("typeSource", "POST")), tempUpdateOp);
 			collection.updateOne(Filters.and(Filters.eq("type", statistic.getType()), Filters.eq("typeDetail", statistic.getTypeDetail()), Filters.eq("typeSource", statistic.getTypeSource())), tempUpdateOp);
 		}
+		
+		System.out.println("add or update " + statistic.toString());
 	}
 	
 	@SuppressWarnings("deprecation")

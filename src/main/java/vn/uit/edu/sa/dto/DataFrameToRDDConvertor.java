@@ -27,6 +27,8 @@ public class DataFrameToRDDConvertor {
 					else return null;
 				
 					if (row.isNullAt(10)) {
+						if (row.isNullAt(20)) return null;
+						
 						switch(row.getString(20)) {
 						case "NOTE": return null;
 						case "EVENT":  return null;
@@ -43,7 +45,6 @@ public class DataFrameToRDDConvertor {
 						}
 						}	
 					}else {
-						System.out.println("group appeared! " + row.getString(10));
 						post.setPostType("GROUP");
 						post.setGroupId(row.getString(10));	
 					}
@@ -133,24 +134,24 @@ public class DataFrameToRDDConvertor {
 	public static JavaRDD<DTO> convertFromDataFrameToCommentDTO(DataFrame df, int numOfCommentDFColumns){
 		JavaRDD<DTO> rdd = null;
 		
-		if (numOfCommentDFColumns != 13) {
+		if (numOfCommentDFColumns == 15) {
 			rdd = df.toJavaRDD().map(new Function<Row, DTO>() {
 
 				@Override
 				public DTO call(Row row) throws Exception {
 					DTO post = new DTO();
 					
-					if (!row.isNullAt(7)) 
+					if (!row.isNullAt(9)) 
 						post.setPostId(row.getString(7));
 					else return null;
 					
-					if (!row.isNullAt(4)) {
-						post.setCreatedDate(Date.valueOf(row.getTimestamp(4).toLocalDateTime().toLocalDate()));					
+					if (!row.isNullAt(5)) {
+						post.setCreatedDate(Date.valueOf(row.getTimestamp(5).toLocalDateTime().toLocalDate()));					
 						post.setMonth(post.getCreatedDate().getMonth());
 					}else return null;
 					
-					if (!row.isNullAt(5) && !row.getString(5).equals(" ")) {
-						post.setMessage(row.getString(5));
+					if (!row.isNullAt(7) && !row.getString(7).equals(" ")) {
+						post.setMessage(row.getString(7));
 					} else return null;
 					
 					post.setPostType("COMMENT");
@@ -158,7 +159,7 @@ public class DataFrameToRDDConvertor {
 					return post;
 				}
 			});
-		}else {
+		}else { //columns: 13
 			rdd = df.toJavaRDD().map(new Function<Row, DTO>() {
 
 				@Override

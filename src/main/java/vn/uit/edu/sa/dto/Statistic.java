@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Statistic implements Serializable {
 	@Override
 	public String toString() {
-		return "Statistic [type=" + type + ", typeDetail=" + typeDetail + ", typeSource" + typeSource + ", posTraining=" + posTraining
+		return "Statistic [type=" + type + ", typeDetail=" + typeDetail + ", typeSource=" + typeSource + ", posTraining=" + posTraining
 				+ ", negTraining=" + negTraining + ", posFacility=" + posFacility + ", negFacility=" + negFacility
 				+ "]";
 	}
