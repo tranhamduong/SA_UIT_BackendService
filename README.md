@@ -5,8 +5,7 @@ initialize backend service.
 
 this version is a refactor process from the origin (https://github.com/BuiNguyenHoangAnh/sa_uit_ui), including converting from the web application to a more server-side application.
 
-Due to deadline, i just refactored only basic and most necessary features from its origin.
-This project is missing features like : train new model, small supporting methods, ...
+Also this version will keep only the most neccessary features. All features can  be used to make a full progress from A-Z. 
 
 Signed-off-by: tranhamduong <tranhamduong1@gmail.com>
 
